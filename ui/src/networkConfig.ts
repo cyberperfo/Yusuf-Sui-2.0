@@ -2,33 +2,31 @@ import { getFullnodeUrl } from "@mysten/sui/client";
 import { createNetworkConfig } from "@mysten/dapp-kit";
 
 /**
- * Package ID retrieved from transaction summary, after runnning `sui client publish`
- *
- * Example:
- * ```bash
- *  Published Objects:
- * ┌──
- * │ PackageID: 0xdbd32a4b9802fab3bca9f7c7cb339d9a88d3b271581280cb83df487ce87a65e6
- * │ Version: 1
- * │ Digest: bn8Vs7TgMzhyPN4GtjDdjTfufX67dErp4926bQeCSFr
- * │ Modules: arena, hero, marketplace
- * └──
+ * Package ID retrieved from transaction summary
  */
-const PACKAGE_ID = "0x622af0abf8914ad68aebd9501903e76ca60f6ad59eb94875c95b745d5eb974a4";
+
+// EKLENECEK KISIM: Admin Cap ID (Terminalden aldığımız yetki kodu)
 
 const { networkConfig, useNetworkVariable, useNetworkVariables } =
   createNetworkConfig({
     devnet: {
       url: getFullnodeUrl("devnet"),
-      variables: { packageId: PACKAGE_ID },
+      variables: {
+        packageId: "0x5dcf4c8fa2bc95746e223590be2153010a9b2c1997a7de4e954d62599ec31321",
+
+      },
     },
     testnet: {
       url: getFullnodeUrl("testnet"),
-      variables: { packageId: PACKAGE_ID },
+      variables: {
+        packageId: "0x5dcf4c8fa2bc95746e223590be2153010a9b2c1997a7de4e954d62599ec31321",
+      },
     },
     mainnet: {
       url: getFullnodeUrl("mainnet"),
-      variables: { packageId: PACKAGE_ID },
+      variables: {
+        packageId: "0x5dcf4c8fa2bc95746e223590be2153010a9b2c1997a7de4e954d62599ec31321",
+      },
     },
   });
 

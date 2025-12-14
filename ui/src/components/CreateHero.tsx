@@ -3,7 +3,7 @@ import { Flex, Heading, Text, Card, Button, TextField } from "@radix-ui/themes";
 import { useState } from "react";
 import { useNetworkVariable } from "../networkConfig";
 import { RefreshProps } from "../types/props";
-import { createHero } from "../utility/heroes/create_hero";
+import { Transaction } from "@mysten/sui/transactions"; // Utility yerine Transaction sınıfını ekledik
 
 export function CreateHero({ refreshKey, setRefreshKey }: RefreshProps) {
   const account = useCurrentAccount();
@@ -21,7 +21,20 @@ export function CreateHero({ refreshKey, setRefreshKey }: RefreshProps) {
     
     setIsCreating(true);
     
-    const tx = createHero(packageId, name, imageUrl, power);
+    // --- DEĞİŞİKLİK BURADA BAŞLIYOR ---
+    // Utility dosyasını çağırmak yerine işlemi burada (inline) tanımlıyoruz.
+    const tx = new Transaction();
+
+    tx.moveCall({
+      target: `${packageId}::hero::create_hero`, // Senin Move kodundaki DOĞRU fonksiyon ismi
+      arguments: [
+        tx.pure.string(name),        // İsim (String)
+        tx.pure.string(imageUrl),    // Resim (String)
+        tx.pure.u64(Number(power)),  // Güç (u64)
+      ],
+    });
+    // --- DEĞİŞİKLİK BURADA BİTİYOR ---
+
     signAndExecute(
       { transaction: tx },
       {
@@ -34,14 +47,18 @@ export function CreateHero({ refreshKey, setRefreshKey }: RefreshProps) {
             },
           });
           
+          // Başarılı olursa formu temizle
           setName("");
           setImageUrl("");
           setPower("");
           setRefreshKey(refreshKey + 1);
           setIsCreating(false);
+          alert("Kahraman Başarıyla Oluşturuldu! 🚀"); // Kullanıcıya bilgi ver
         },
-        onError: () => {
+        onError: (error) => {
+          console.error(error);
           setIsCreating(false);
+          alert("Hata oluştu. Lütfen konsolu kontrol et.");
         }
       }
     );
