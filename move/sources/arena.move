@@ -1,7 +1,10 @@
 module challenge::arena;
 
-use challenge::hero::Hero;
+use challenge::hero::{Self, Hero};
 use sui::event;
+// Sui Framework'ün yeni sürümlerinde aşağıdaki kütüphaneler (object, tx_context, transfer)
+// otomatik olarak tanımlıdır. Uyarıları (warnings) yok etmek için 'use' satırlarını kaldırdım.
+// Kodun yine de sorunsuz çalışacaktır.
 
 // ========= STRUCTS =========
 
@@ -28,28 +31,63 @@ public struct ArenaCompleted has copy, drop {
 
 public fun create_arena(hero: Hero, ctx: &mut TxContext) {
 
-    // TODO: Create an arena object
-        // Hints:
-        // Use object::new(ctx) for unique ID
-        // Set warrior field to the hero parameter
-        // Set owner to ctx.sender()
-    // TODO: Emit ArenaCreated event with arena ID and timestamp (Don't forget to use ctx.epoch_timestamp_ms(), object::id(&arena))
-    // TODO: Use transfer::share_object() to make it publicly tradeable
+    let arena = Arena {
+        id: object::new(ctx),
+        warrior: hero,
+        owner: ctx.sender(), // tx_context::sender(ctx) yerine kısa hali
+    };
+
+    event::emit(
+        ArenaCreated {
+            arena_id: object::id(&arena),
+            timestamp: ctx.epoch_timestamp_ms(), // tx_context::epoch... yerine kısa hali
+        },
+    ); 
+
+    transfer::share_object(arena);
 }
 
 #[allow(lint(self_transfer))]
 public fun battle(hero: Hero, arena: Arena, ctx: &mut TxContext) {
     
-    // TODO: Implement battle logic
-        // Hints:
-        // Destructure arena to get id, warrior, and owner
-    // TODO: Compare hero.hero_power() with warrior.hero_power()
-        // Hints: 
-        // If hero wins: both heroes go to ctx.sender()
-        // If warrior wins: both heroes go to battle place owner
-    // TODO:  Emit ArenaCompleted event with winner/loser IDs (Don't forget to use object::id(&warrior) or object::id(&hero) ). 
-        // Hints:  
-        // You have to emit this inside of the if else statements
-    // TODO: Delete the battle place ID 
-}
+    // 1. Arena objesini parçalara ayır
+    let Arena { id: arena_id, warrior, owner } = arena;
 
+    // 2. ID'leri sakla (Move kuralı gereği transferden önce almalıyız)
+    let hero_id_val = object::id(&hero);
+    let warrior_id_val = object::id(&warrior);
+
+    // 3. Savaş Mantığı
+    if (hero::hero_power(&hero) > hero::hero_power(&warrior)) {
+        
+        // --- SENARYO 1: Hero Kazanır ---
+        transfer::public_transfer(hero, ctx.sender());
+        transfer::public_transfer(warrior, ctx.sender());
+
+        event::emit(
+            ArenaCompleted {
+                winner_hero_id: hero_id_val,
+                loser_hero_id: warrior_id_val,
+                timestamp: ctx.epoch_timestamp_ms(),
+            },
+        );
+
+    } else {
+        
+        // --- SENARYO 2: Warrior (Arena Sahibi) Kazanır ---
+        transfer::public_transfer(hero, owner);
+        transfer::public_transfer(warrior, owner);
+
+        event::emit(
+            ArenaCompleted {
+                winner_hero_id: warrior_id_val,
+                loser_hero_id: hero_id_val,
+                timestamp: ctx.epoch_timestamp_ms(),
+            },
+        );
+    }; // <--- İŞTE KIRMIZI HATAYI ÇÖZEN NOKTALI VİRGÜL BURADA! 
+       // if/else bloğu bitti, şimdi diğer komuta geçiyoruz diyoruz.
+
+    // 4. Arena objesini sil
+    object::delete(arena_id);
+}
