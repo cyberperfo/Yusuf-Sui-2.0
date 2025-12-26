@@ -12,20 +12,20 @@ const { networkConfig, useNetworkVariable, useNetworkVariables } =
     devnet: {
       url: getFullnodeUrl("devnet"),
       variables: {
-        packageId: "0x5dcf4c8fa2bc95746e223590be2153010a9b2c1997a7de4e954d62599ec31321",
+        packageId: "",
 
       },
     },
     testnet: {
       url: getFullnodeUrl("testnet"),
       variables: {
-        packageId: "0x5dcf4c8fa2bc95746e223590be2153010a9b2c1997a7de4e954d62599ec31321",
+        packageId: "",
       },
     },
     mainnet: {
       url: getFullnodeUrl("mainnet"),
       variables: {
-        packageId: "0x5dcf4c8fa2bc95746e223590be2153010a9b2c1997a7de4e954d62599ec31321",
+        packageId: "",
       },
     },
   });
